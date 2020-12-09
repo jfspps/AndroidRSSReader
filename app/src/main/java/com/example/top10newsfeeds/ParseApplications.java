@@ -1,7 +1,6 @@
 package com.example.top10newsfeeds;
 
 import android.util.Log;
-import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -60,8 +59,11 @@ public class ParseApplications {
                             // note how we skip any metadata until the program finds the first <entry> tag
                             // as good practice: with XML files, "entry".methodName is never null whereas tagName.methodName might be
                             if ("entry".equalsIgnoreCase(tagName)) {
+                                // we're done with this present entry tag
                                 applications.add(currentRecord);
                                 inEntry = false;
+
+                                // the remaining would be in <entry></entry>
                             } else if ("name".equalsIgnoreCase(tagName)) {
                                 currentRecord.setName(textValue);
                             } else if ("artist".equalsIgnoreCase(tagName)) {
