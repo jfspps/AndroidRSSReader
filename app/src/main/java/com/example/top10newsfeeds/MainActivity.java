@@ -1,10 +1,13 @@
 package com.example.top10newsfeeds;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -35,6 +38,19 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: done");
     }
 
+    // called to inflate the menu objects
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // pass feeds_menu.xml (found in res directory)
+        getMenuInflater().inflate(R.menu.feeds_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        return super.onOptionsItemSelected(item);
+    }
+
     private class DownloadData extends AsyncTask<String, Void, String>{
         // ASyncTask: pass a String, no need for progress bar (hence void) and result return type
         // i.e. pass a URL string, no need for progress bar and return an XML feed
@@ -44,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.d(TAG, "onPostExecute: parameter is " + s);
+//            Log.d(TAG, "onPostExecute: parameter is " + s);
             ParseApplications parseApplications = new ParseApplications();
             parseApplications.parse(s);
 

@@ -44,7 +44,7 @@ public class ParseApplications {
                 String tagName = xmlPullParser.getName();
                 switch (eventType) {
                     case XmlPullParser.START_TAG:
-                        Log.d(TAG, "parse: Starting tag for " + tagName);
+//                        Log.d(TAG, "parse: Starting tag for " + tagName);
                         if ("entry".equalsIgnoreCase(tagName)) {
                             inEntry = true;
                             currentRecord = new FeedEntry();
@@ -54,7 +54,7 @@ public class ParseApplications {
                         textValue = xmlPullParser.getText();
                         break;
                     case XmlPullParser.END_TAG:
-                        Log.d(TAG, "parse: Ending tag for " + tagName);
+//                        Log.d(TAG, "parse: Ending tag for " + tagName);
                         if (inEntry) {
                             // note how we skip any metadata until the program finds the first <entry> tag
                             // as good practice: with XML files, "entry".methodName is never null whereas tagName.methodName might be
@@ -80,10 +80,10 @@ public class ParseApplications {
                 }
                 eventType = xmlPullParser.next();
             }
-            for (FeedEntry app : applications){
-                Log.d(TAG, "*********************************");
-                Log.d(TAG, app.toString());
-            }
+//            for (FeedEntry app : applications){
+//                Log.d(TAG, "*********************************");
+//                Log.d(TAG, app.toString());
+//            }
 
         } catch (Exception e) {
             status = false;
