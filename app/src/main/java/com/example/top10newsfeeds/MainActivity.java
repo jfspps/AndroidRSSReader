@@ -50,12 +50,17 @@ public class MainActivity extends AppCompatActivity {
 
             // parseApplications holds the arraylist needed
             // the adapter manages the resources sent to a view, and recycles them when required
-            ArrayAdapter<FeedEntry> arrayAdapter = new ArrayAdapter<>(
-                    MainActivity.this, R.layout.list_item, parseApplications.getApplications()
-            );
+//            ArrayAdapter<FeedEntry> arrayAdapter = new ArrayAdapter<>(
+//                    MainActivity.this, R.layout.list_item, parseApplications.getApplications()
+//            );
 
-            // link the listView, listApps, with the adapter
-            listApps.setAdapter(arrayAdapter);
+            // use the custom adapter
+            FeedAdapter feedAdapter = new FeedAdapter(MainActivity.this, R.layout.list_record,
+                    parseApplications.getApplications());
+                listApps.setAdapter(feedAdapter);
+
+            // link the listView, listApps, with the adapter (feedAdapter or default arrayAdapter)
+            listApps.setAdapter(feedAdapter);
         }
 
         @Override
