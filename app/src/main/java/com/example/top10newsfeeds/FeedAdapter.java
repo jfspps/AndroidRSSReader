@@ -35,21 +35,36 @@ public class FeedAdapter extends ArrayAdapter {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        ViewHolder viewHolder;
+
         // check if we can re-use a view (this is possible after the program has effectively had the screen filled)
         if (convertView == null){
             convertView = layoutInflater.inflate(layoutResource, parent, false);
+            viewHolder = new ViewHolder(convertView);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
-
-        TextView tvName =  (TextView) convertView.findViewById(R.id.tvName);
-        TextView tvArtist =  (TextView) convertView.findViewById(R.id.tvArtist);
-        TextView tvSummary =  (TextView) convertView.findViewById(R.id.tvSummary);
 
         FeedEntry currentApp = applications.get(position);
 
-        tvName.setText(currentApp.getName());
-        tvArtist.setText(currentApp.getArtist());
-        tvSummary.setText(currentApp.getSummary());
+        viewHolder.tvName.setText(currentApp.getName());
+        viewHolder.tvArtist.setText(currentApp.getArtist());
+        viewHolder.tvSummary.setText(currentApp.getSummary());
 
         return convertView;
+    }
+
+    // use this class to store processed views so that we need not query them again
+    private class ViewHolder {
+        final TextView tvName;
+        final TextView tvArtist;
+        final TextView tvSummary;
+
+        public ViewHolder(View view) {
+            this.tvName = view.findViewById(R.id.tvName);
+            this.tvArtist = view.findViewById(R.id.tvArtist);
+            this.tvSummary = view.findViewById(R.id.tvSummary);
+        }
     }
 }
