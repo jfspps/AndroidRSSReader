@@ -1,15 +1,14 @@
 package com.example.top10newsfeeds;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +21,13 @@ import java.net.URL;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private ListView listApps;
+    
+    // note that %d will be replaced by feedLimit, using String.format
+    private String feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml";
+    private int feedLimit = 10;
+
+    public static final String STATE_URL = "Current URL";
+    public static final String STATE_LIMIT = "Current feed limit";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listApps = (ListView) findViewById(R.id.xmlListView);
 
-        downloadUrl("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml");
+        downloadUrl(String.format(feedUrl, feedLimit));
     }
 
     // called to inflate the menu objects
@@ -37,6 +43,12 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // pass feeds_menu.xml (found in res directory)
         getMenuInflater().inflate(R.menu.feeds_menu, menu);
+
+        if (feedLimit == 10) {
+            menu.findItem(R.id.mnu10).setChecked(true);
+        } else
+            menu.findItem(R.id.mnu25).setChecked(true);
+
         return true;
     }
 
@@ -44,29 +56,52 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        String feedUrl;
+        String currentURL = feedUrl;
+        int currentLimit = feedLimit;
+        boolean refresh = false;
 
         switch (id) {
+            case R.id.mnuRefresh:
+                refresh = true;
+                Log.d(TAG, "onOptionsItemSelected: refresh requested");
+                break;
             case R.id.mnuFree:
-                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml";
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml";
                 break;
             case R.id.mnuPaid:
-                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=10/xml";
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=%d/xml";
                 break;
             case R.id.mnuSongs:
-                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=10/xml";
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=%d/xml";
+                break;
+            case R.id.mnu10:
+                // do nothing, continue to mnu25
+            case R.id.mnu25:
+                if (!item.isChecked()){
+                    item.setChecked(true);      // keeps changes known to the user and Android later
+                    feedLimit = 35 - feedLimit; // use this to toggle between 10 and 25, given there are only two options
+                    Log.d(TAG, "onOptionsItemSelected: " + item.getTitle() + " setting feedLimit to " + feedLimit);
+                } else {
+                    Log.d(TAG, "onOptionsItemSelected: " + item.getTitle() + " feedLimit unchanged");
+                }
                 break;
             default:
                 // needed to execute the default action should the menu (or submenu present) not return a valid value outside the switch block
                 return super.onOptionsItemSelected(item);
         }
 
-        downloadUrl(feedUrl);
+        // stops the app from re-downloading the same feed if selected again
+        if (!refresh && currentURL.equals(feedUrl) && currentLimit == feedLimit){
+            Log.d(TAG, "onOptionsItemSelected: download not required");
+            return super.onOptionsItemSelected(item);
+        }
+
+        downloadUrl(String.format(feedUrl, feedLimit));
         return true;
     }
 
     private void downloadUrl(String feedUrl) {
-        Log.d(TAG, "downloadUrl: starting ASyncTask");
+        Log.d(TAG, "Downloading from URL...");
         DownloadData downloadData = new DownloadData();
 
         // update as needed
@@ -75,6 +110,21 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "downloadUrl: done");
     }
 
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(STATE_URL, feedUrl);
+        outState.putInt(STATE_LIMIT, feedLimit);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        feedUrl = savedInstanceState.getString(STATE_URL);
+        feedLimit = savedInstanceState.getInt(STATE_LIMIT);
+
+        downloadUrl(String.format(feedUrl, feedLimit));
+    }
 
     private class DownloadData extends AsyncTask<String, Void, String>{
         // ASyncTask: pass a String, no need for progress bar (hence void) and result return type
