@@ -29,13 +29,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         listApps = (ListView) findViewById(R.id.xmlListView);
 
-        Log.d(TAG, "onCreate: starting ASyncTask");
-        DownloadData downloadData = new DownloadData();
-
-        // update as needed
-        downloadData.execute("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml");
-
-        Log.d(TAG, "onCreate: done");
+        downloadUrl("http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml");
     }
 
     // called to inflate the menu objects
@@ -46,10 +40,41 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // handles menu events, with MenuItem passed being the menu item clicked
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        return super.onOptionsItemSelected(item);
+        int id = item.getItemId();
+        String feedUrl;
+
+        switch (id) {
+            case R.id.mnuFree:
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=10/xml";
+                break;
+            case R.id.mnuPaid:
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/toppaidapplications/limit=10/xml";
+                break;
+            case R.id.mnuSongs:
+                feedUrl = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topsongs/limit=10/xml";
+                break;
+            default:
+                // needed to execute the default action should the menu (or submenu present) not return a valid value outside the switch block
+                return super.onOptionsItemSelected(item);
+        }
+
+        downloadUrl(feedUrl);
+        return true;
     }
+
+    private void downloadUrl(String feedUrl) {
+        Log.d(TAG, "downloadUrl: starting ASyncTask");
+        DownloadData downloadData = new DownloadData();
+
+        // update as needed
+        downloadData.execute(feedUrl);
+
+        Log.d(TAG, "downloadUrl: done");
+    }
+
 
     private class DownloadData extends AsyncTask<String, Void, String>{
         // ASyncTask: pass a String, no need for progress bar (hence void) and result return type
